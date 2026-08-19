@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import Wordmark from './Wordmark.jsx'
+import Logo from './Logo.jsx'
 import SplitBar from './SplitBar.jsx'
 import { colorsForMembers } from '../utils/palette.js'
 
@@ -41,9 +42,9 @@ export default function AuthLayout({ eyebrow, title, subtitle, children, footer 
 
       <main className="flex min-h-screen flex-col justify-center px-5 py-12 sm:px-12">
         <div className="mx-auto w-full max-w-sm">
-          <Link to="/" className="mb-10 inline-block lg:hidden">
-            <Wordmark />
-          </Link>
+          <div className="mb-10 flex justify-center lg:hidden">
+            <Logo className="h-10 w-auto" />
+          </div>
 
           <p className="label text-violet">{eyebrow}</p>
           <h1 className="display mt-3 text-4xl">{title}</h1>

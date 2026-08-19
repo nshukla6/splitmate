@@ -74,10 +74,19 @@ export default function Register() {
 
         <Alert>{error}</Alert>
 
-        <Button type="submit" className="w-full py-3">
+        <Button type="submit" className="w-full gap-2 py-3">
+          <CreateIcon />
           Create account
         </Button>
       </form>
     </AuthLayout>
+  )
+}
+
+function CreateIcon() {
+  return (
+    <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <path d="M8 3.5v9M3.5 8h9" strokeLinecap="round" />
+    </svg>
   )
 }
