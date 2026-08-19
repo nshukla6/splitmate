@@ -2,6 +2,7 @@ import { Link, Navigate } from 'react-router-dom'
 import { useAuth } from '../context/auth-context.js'
 import SplitBar from '../components/SplitBar.jsx'
 import Wordmark from '../components/Wordmark.jsx'
+import Logo from '../components/Logo.jsx'
 import Avatar, { AvatarStack } from '../components/Avatar.jsx'
 import { Button, PendingTag } from '../components/ui.jsx'
 import { colorsForMembers } from '../utils/palette.js'
@@ -41,7 +42,7 @@ export default function Landing() {
   return (
     <div className="min-h-screen">
       <header className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
-        <Wordmark />
+        <Logo className="h-8 w-auto" />
         <Link
           to="/login"
           className="label rounded-md px-2 py-1 text-ink-soft transition-colors hover:text-ink"
@@ -72,10 +73,14 @@ export default function Landing() {
 
           <div className="anim-rise mt-9 flex flex-wrap items-center gap-3" style={{ animationDelay: '180ms' }}>
             <Link to="/register">
-              <Button className="px-6 py-3 text-[15px]">Get started</Button>
+              <Button className="px-6 py-3 text-[15px]">
+                <ArrowIcon />
+                Get started
+              </Button>
             </Link>
             <Link to="/login">
               <Button variant="ghost" className="px-4 py-3 text-[15px]">
+                <SignInIcon />
                 I already have an account
               </Button>
             </Link>
@@ -203,7 +208,7 @@ export default function Landing() {
 
       <footer className="border-t border-line">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-8">
-          <Wordmark />
+          <Logo className="h-8 w-auto" />
           <p className="text-sm text-ink-faint">
             Ready to square up?{' '}
             <Link to="/register" className="font-medium text-violet hover:underline">
@@ -213,5 +218,22 @@ export default function Landing() {
         </div>
       </footer>
     </div>
+  )
+}
+
+function ArrowIcon() {
+  return (
+    <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <path d="M3 8h10M9 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function SignInIcon() {
+  return (
+    <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.6">
+      <path d="M2 8h8M9 5l3 3-3 3" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M13 2v12" strokeLinecap="round" />
+    </svg>
   )
 }

@@ -7,6 +7,7 @@ import { formatCents } from '../utils/money.js'
 import { AvatarStack } from '../components/Avatar.jsx'
 import { colorsForMembers } from '../utils/palette.js'
 import { Button } from '../components/ui.jsx'
+import Logo from '../components/Logo.jsx'
 
 export default function Dashboard() {
   const { user } = useAuth()
@@ -25,6 +26,9 @@ export default function Dashboard() {
 
   return (
     <div>
+      <div className="mb-8 flex items-center justify-center">
+        <Logo className="h-10 w-auto" />
+      </div>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="label text-ink-faint">Signed in as {user.email}</p>
@@ -32,7 +36,7 @@ export default function Dashboard() {
         </div>
         {groups.length > 0 && (
           <Link to="/group/new">
-            <Button>
+            <Button className="gap-2">
               <PlusIcon />
               Create group
             </Button>
@@ -132,7 +136,7 @@ function EmptyState() {
         and add the people you split with.
       </p>
       <Link to="/group/new" className="mt-6 inline-block">
-        <Button className="px-6 py-3">
+        <Button className="gap-2 px-6 py-3">
           <PlusIcon />
           Create group
         </Button>
@@ -156,3 +160,4 @@ function ArrowIcon() {
     </svg>
   )
 }
+

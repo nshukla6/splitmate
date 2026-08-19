@@ -103,7 +103,8 @@ export default function CreateGroup() {
                 placeholder="bob@test.com"
                 autoComplete="off"
               />
-              <Button type="button" variant="secondary" onClick={addInvite} className="shrink-0">
+              <Button type="button" variant="secondary" onClick={addInvite} className="shrink-0 gap-1">
+                <PlusIcon />
                 Add
               </Button>
             </div>
@@ -144,7 +145,8 @@ export default function CreateGroup() {
         <Alert>{formError}</Alert>
 
         <div className="flex gap-2">
-          <Button type="submit" className="px-6 py-3">
+          <Button type="submit" className="gap-2 px-6 py-3">
+            <CreateIcon />
             Create group
           </Button>
           <Link to="/dashboard">
@@ -155,5 +157,21 @@ export default function CreateGroup() {
         </div>
       </form>
     </div>
+  )
+}
+
+function PlusIcon() {
+  return (
+    <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <path d="M8 3.5v9M3.5 8h9" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function CreateIcon() {
+  return (
+    <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <path d="M8 3.5v9M3.5 8h9" strokeLinecap="round" />
+    </svg>
   )
 }

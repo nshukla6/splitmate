@@ -7,7 +7,7 @@
  *   group   { id, name, createdBy, createdAt, members: [member] }
  *   member  { email, name, status: 'active' | 'pending', userId | null }
  *   expense { id, groupId, description, amount, paidBy, participants[],
- *             date, createdBy, createdAt, isDeleted,
+ *             date, createdBy, createdAt, isDeleted, category,
  *             splitMode?: 'manual', splits?: [{ email, cents }] }
  *
  * An expense splits equally unless it carries splitMode 'manual' and a splits
@@ -210,6 +210,7 @@ export function addExpense({
   participants,
   date,
   createdBy,
+  category,
   splitMode,
   splits,
 }) {
@@ -222,6 +223,7 @@ export function addExpense({
     participants: participants.map(normalizeEmail),
     date,
     createdBy: normalizeEmail(createdBy),
+    category: category || 'Other',
     createdAt: new Date().toISOString(),
     isDeleted: false,
   }

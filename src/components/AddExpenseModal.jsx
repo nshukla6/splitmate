@@ -8,16 +8,24 @@ import { Alert, Button, Field, inputClass, PendingTag } from './ui.jsx'
  * Opens over the group page — the list stays visible behind it, so an expense
  * is added in the same place it lands. Shares recalculate on every keystroke.
  */
-export default function AddExpenseModal({ group, currentUserEmail, colors, onSave, onClose }) {
-  const [description, setDescription] = useState('')
-  const [amount, setAmount] = useState('')
-  const [date, setDate] = useState(today)
-  const [paidBy, setPaidBy] = useState(currentUserEmail)
-  const [participants, setParticipants] = useState(() => group.members.map((m) => m.email))
-  const [splitMode, setSplitMode] = useState('equal')
+export default function AddExpenseModal({ group, currentUserEmail, colors, onSave, onClose, editingExpense }) {
+  const [description, setDescription] = useState(editingExpense?.description ?? '')
+  const [amount, setAmount] = useState(editingExpense ? (editingExpense.amount).toFixed(2) : '')
+  const [date, setDate] = useState(editingExpense?.date ?? today)
+  const [paidBy, setPaidBy] = useState(editingExpense?.paidBy ?? currentUserEmail)
+  const [participants, setParticipants] = useState(() => editingExpense?.participants ?? group.members.map((m) => m.email))
+  const [splitMode, setSplitMode] = useState(editingExpense?.splitMode ?? 'equal')
+  const [category, setCategory] = useState(editingExpense?.category ?? 'Other')
   // Keyed by email, kept as raw input strings so a half-typed "12." survives.
   // Retained when switching back to Equal, so toggling does not lose typing.
-  const [manualAmounts, setManualAmounts] = useState({})
+  const [manualAmounts, setManualAmounts] = useState(() => {
+    if (!editingExpense?.splits) return {}
+    const amounts = {}
+    for (const split of editingExpense.splits) {
+      amounts[split.email] = (split.cents / 100).toFixed(2)
+    }
+    return amounts
+  })
   const [error, setError] = useState('')
 
   const dialogRef = useRef(null)
@@ -110,6 +118,7 @@ export default function AddExpenseModal({ group, currentUserEmail, colors, onSav
       paidBy,
       participants,
       date,
+      category,
       ...(isManual && {
         splitMode: 'manual',
         splits: participants.map((email) => ({ email, cents: shares[email] ?? 0 })),
@@ -136,7 +145,7 @@ export default function AddExpenseModal({ group, currentUserEmail, colors, onSav
             <div>
               <p className="label text-ink-faint">{group.name}</p>
               <h2 id="add-expense-title" className="display mt-1 text-2xl">
-                Add an expense
+                {editingExpense ? 'Edit expense' : 'Add an expense'}
               </h2>
             </div>
             <button
@@ -205,6 +214,23 @@ export default function AddExpenseModal({ group, currentUserEmail, colors, onSav
                     {member.email === currentUserEmail ? `${member.name} (you)` : member.name}
                   </option>
                 ))}
+              </select>
+            </Field>
+
+            <Field label="Category" htmlFor="expense-category">
+              <select
+                id="expense-category"
+                className={inputClass}
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+              >
+                <option value="Food & Drinks">Food & Drinks</option>
+                <option value="Transport">Transport</option>
+                <option value="Accommodation">Accommodation</option>
+                <option value="Activities">Activities</option>
+                <option value="Shopping">Shopping</option>
+                <option value="Utilities">Utilities</option>
+                <option value="Other">Other</option>
               </select>
             </Field>
 
@@ -338,7 +364,7 @@ export default function AddExpenseModal({ group, currentUserEmail, colors, onSav
               Cancel
             </Button>
             <Button type="submit" disabled={unbalanced}>
-              Save expense
+              {editingExpense ? 'Update expense' : 'Save expense'}
             </Button>
           </footer>
         </form>

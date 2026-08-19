@@ -72,7 +72,8 @@ export default function Login() {
 
         <Alert>{error}</Alert>
 
-        <Button type="submit" className="w-full py-3">
+        <Button type="submit" className="w-full gap-2 py-3">
+          <SignInIcon />
           Sign in
         </Button>
       </form>
@@ -93,5 +94,14 @@ export default function Login() {
         </div>
       </div>
     </AuthLayout>
+  )
+}
+
+function SignInIcon() {
+  return (
+    <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.6">
+      <path d="M2 8h8M9 5l3 3-3 3" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M13 2v12" strokeLinecap="round" />
+    </svg>
   )
 }
