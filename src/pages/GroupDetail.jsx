@@ -17,6 +17,7 @@ export default function GroupDetail() {
   const [group] = useState(() => storage.getGroup(id))
   const [expenses, setExpenses] = useState(() => (group ? storage.getExpenses(id) : []))
   const [modalOpen, setModalOpen] = useState(false)
+  const [editingExpense, setEditingExpense] = useState(null)
 
   const refresh = useCallback(() => setExpenses(storage.getExpenses(id)), [id])
 
@@ -47,14 +48,23 @@ export default function GroupDetail() {
   }
 
   function handleSave(draft) {
+    if (editingExpense) {
+      storage.deleteExpense(editingExpense.id)
+    }
     storage.addExpense({ ...draft, groupId: group.id, createdBy: user.email })
     setModalOpen(false)
+    setEditingExpense(null)
     refresh()
   }
 
   function handleDelete(expenseId) {
     storage.deleteExpense(expenseId)
     refresh()
+  }
+
+  function handleEdit(expense) {
+    setEditingExpense(expense)
+    setModalOpen(true)
   }
 
   const myBalance = net[user.email] ?? 0
@@ -73,7 +83,7 @@ export default function GroupDetail() {
             {expenses.length} expense{expenses.length === 1 ? '' : 's'}
           </p>
         </div>
-        <Button onClick={() => setModalOpen(true)}>
+        <Button onClick={() => setModalOpen(true)} className="gap-2">
           <PlusIcon />
           Add expense
         </Button>
@@ -102,7 +112,7 @@ export default function GroupDetail() {
               <p className="mx-auto mt-2 max-w-xs text-[15px] leading-relaxed text-ink-soft">
                 Add the first expense and Splitmate starts working out who owes whom.
               </p>
-              <Button className="mt-5" onClick={() => setModalOpen(true)}>
+              <Button className="mt-5 gap-2" onClick={() => setModalOpen(true)}>
                 <PlusIcon />
                 Add expense
               </Button>
@@ -117,6 +127,7 @@ export default function GroupDetail() {
                   nameFor={nameFor}
                   colors={colors}
                   onDelete={() => handleDelete(expense.id)}
+                  onEdit={() => handleEdit(expense)}
                 />
               ))}
             </ul>
@@ -159,17 +170,22 @@ export default function GroupDetail() {
           currentUserEmail={user.email}
           colors={colors}
           onSave={handleSave}
-          onClose={() => setModalOpen(false)}
+          onClose={() => {
+            setModalOpen(false)
+            setEditingExpense(null)
+          }}
+          editingExpense={editingExpense}
         />
       )}
     </div>
   )
 }
 
-function ExpenseRow({ expense, currentUserEmail, nameFor, colors, onDelete }) {
+function ExpenseRow({ expense, currentUserEmail, nameFor, colors, onDelete, onEdit }) {
   const [confirming, setConfirming] = useState(false)
   const shares = sharesFor(expense)
   const payerIsYou = expense.paidBy === currentUserEmail
+  const isCreator = expense.createdBy === currentUserEmail
 
   return (
     <li className="group rounded-2xl border border-line bg-surface p-4 transition-colors hover:border-ink-faint/50">
@@ -192,6 +208,14 @@ function ExpenseRow({ expense, currentUserEmail, nameFor, colors, onDelete }) {
         <span className="label text-ink-faint">
           {expense.participants.length} way{expense.participants.length === 1 ? '' : 's'}
         </span>
+        {expense.category && expense.category !== 'Other' && (
+          <>
+            <span aria-hidden="true" className="text-ink-faint/50">·</span>
+            <span className="inline-flex items-center rounded-full bg-violet/10 px-2 py-0.5 text-xs font-medium text-violet">
+              {expense.category}
+            </span>
+          </>
+        )}
         {expense.splitMode === 'manual' && (
           <>
             <span aria-hidden="true" className="text-ink-faint/50">·</span>
@@ -223,16 +247,28 @@ function ExpenseRow({ expense, currentUserEmail, nameFor, colors, onDelete }) {
             </button>
           </span>
         ) : (
-          <button
-            type="button"
-            onClick={() => setConfirming(true)}
-            aria-label={`Remove ${expense.description}`}
-            className="shrink-0 rounded-md p-1.5 text-ink-faint opacity-0 transition-opacity hover:text-owe focus-visible:opacity-100 group-hover:opacity-100"
-          >
-            <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <path d="M3 4.5h10M6.5 4.5V3h3v1.5M4.5 4.5l.6 8h5.8l.6-8" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </button>
+          <span className="flex shrink-0 items-center gap-2">
+            {isCreator && (
+              <button
+                type="button"
+                onClick={onEdit}
+                aria-label={`Edit ${expense.description}`}
+                className="label rounded-md px-1.5 py-1 text-violet transition-opacity hover:opacity-70"
+              >
+                Edit
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => setConfirming(true)}
+              aria-label={`Remove ${expense.description}`}
+              className="shrink-0 rounded-md p-1.5 text-ink-faint opacity-0 transition-opacity hover:text-owe focus-visible:opacity-100 group-hover:opacity-100"
+            >
+              <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M3 4.5h10M6.5 4.5V3h3v1.5M4.5 4.5l.6 8h5.8l.6-8" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+          </span>
         )}
       </div>
     </li>
