@@ -3,7 +3,7 @@
  * reads as the same colour in every split bar, avatar, and settlement row.
  */
 const MEMBER_COLORS = [
-  '#6D3BF0', // violet
+  '#EA580C', // orange
   '#0E8F86', // teal
   '#E4572E', // coral
   '#2563C9', // blue
