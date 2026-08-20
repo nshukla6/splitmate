@@ -229,6 +229,10 @@ function ExpenseRow({ expense, currentUserEmail, nameFor, colors, onDelete, onEd
         )}
       </div>
 
+      {expense.notes && (
+        <p className="mt-2 text-sm text-ink-soft italic">{expense.notes}</p>
+      )}
+
       <div className="mt-3 flex items-center gap-3">
         <div className="flex-1">
           <SplitBar shares={shares} height={5} colors={colors} />

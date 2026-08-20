@@ -16,6 +16,7 @@ export default function AddExpenseModal({ group, currentUserEmail, colors, onSav
   const [participants, setParticipants] = useState(() => editingExpense?.participants ?? group.members.map((m) => m.email))
   const [splitMode, setSplitMode] = useState(editingExpense?.splitMode ?? 'equal')
   const [category, setCategory] = useState(editingExpense?.category ?? 'Other')
+  const [notes, setNotes] = useState(editingExpense?.notes ?? '')
   // Keyed by email, kept as raw input strings so a half-typed "12." survives.
   // Retained when switching back to Equal, so toggling does not lose typing.
   const [manualAmounts, setManualAmounts] = useState(() => {
@@ -119,6 +120,7 @@ export default function AddExpenseModal({ group, currentUserEmail, colors, onSav
       participants,
       date,
       category,
+      ...(notes.trim() && { notes }),
       ...(isManual && {
         splitMode: 'manual',
         splits: participants.map((email) => ({ email, cents: shares[email] ?? 0 })),
@@ -232,6 +234,17 @@ export default function AddExpenseModal({ group, currentUserEmail, colors, onSav
                 <option value="Utilities">Utilities</option>
                 <option value="Other">Other</option>
               </select>
+            </Field>
+
+            <Field label="Notes (optional)" htmlFor="expense-notes">
+              <textarea
+                id="expense-notes"
+                className={`${inputClass} resize-none`}
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Add any details or notes..."
+                rows="3"
+              />
             </Field>
 
             <div>

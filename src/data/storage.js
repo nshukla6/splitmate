@@ -7,7 +7,7 @@
  *   group   { id, name, createdBy, createdAt, members: [member] }
  *   member  { email, name, status: 'active' | 'pending', userId | null }
  *   expense { id, groupId, description, amount, paidBy, participants[],
- *             date, createdBy, createdAt, isDeleted, category,
+ *             date, createdBy, createdAt, isDeleted, category, notes?,
  *             splitMode?: 'manual', splits?: [{ email, cents }] }
  *
  * An expense splits equally unless it carries splitMode 'manual' and a splits
@@ -211,6 +211,7 @@ export function addExpense({
   date,
   createdBy,
   category,
+  notes,
   splitMode,
   splits,
 }) {
@@ -226,6 +227,10 @@ export function addExpense({
     category: category || 'Other',
     createdAt: new Date().toISOString(),
     isDeleted: false,
+  }
+
+  if (notes?.trim()) {
+    expense.notes = String(notes).trim()
   }
 
   // Only an unequal expense records amounts; an equal one stays derivable, so
