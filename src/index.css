@@ -2,17 +2,17 @@
 @import "tailwindcss";
 
 @theme {
-  --color-ink: #17122B;
-  --color-ink-soft: #4A4463;
-  --color-ink-faint: #8E88A6;
-  --color-paper: #F3F1F7;
+  --color-ink: #1A1410;
+  --color-ink-soft: #5D5550;
+  --color-ink-faint: #95898A;
+  --color-paper: #F8F7F4;
   --color-surface: #FFFFFF;
-  --color-line: #E3DFEE;
-  --color-line-soft: #EFECF6;
+  --color-line: #E8E5E0;
+  --color-line-soft: #F0ECEA;
 
-  --color-violet: #5B2BE6;
-  --color-violet-deep: #3B0FA8;
-  --color-violet-wash: #EEE9FD;
+  --color-orange: #EA580C;
+  --color-orange-deep: #C71F0A;
+  --color-orange-wash: #FEF4ED;
 
   --color-owed: #0B7A52;
   --color-owed-wash: #E3F3EC;
@@ -40,7 +40,7 @@
   .tabular { font-variant-numeric: tabular-nums; }
 
   :focus-visible {
-    outline: 2px solid var(--color-violet);
+    outline: 2px solid var(--color-orange);
     outline-offset: 2px;
     border-radius: 4px;
   }

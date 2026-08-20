@@ -10,7 +10,7 @@ import { Alert, Button, Field, inputClass, PendingTag } from './ui.jsx'
  */
 export default function AddExpenseModal({ group, currentUserEmail, colors, onSave, onClose, editingExpense }) {
   const [description, setDescription] = useState(editingExpense?.description ?? '')
-  const [amount, setAmount] = useState(editingExpense ? (editingExpense.amount).toFixed(2) : '')
+  const [amount, setAmount] = useState(editingExpense ? (editingExpense.amount?.toFixed(2) ?? '') : '')
   const [date, setDate] = useState(editingExpense?.date ?? today)
   const [paidBy, setPaidBy] = useState(editingExpense?.paidBy ?? currentUserEmail)
   const [participants, setParticipants] = useState(() => editingExpense?.participants ?? group.members.map((m) => m.email))
@@ -239,7 +239,7 @@ export default function AddExpenseModal({ group, currentUserEmail, colors, onSav
                 <span className="label text-ink-faint">Who shares it</span>
                 <button
                   type="button"
-                  className="label text-violet transition-opacity hover:opacity-70"
+                  className="label text-orange transition-opacity hover:opacity-70"
                   onClick={() =>
                     setParticipants(allSelected ? [] : group.members.map((m) => m.email))
                   }
@@ -264,7 +264,7 @@ export default function AddExpenseModal({ group, currentUserEmail, colors, onSav
                     aria-pressed={splitMode === mode}
                     className={`label cursor-pointer rounded-md px-3 py-1.5 transition-colors ${
                       splitMode === mode
-                        ? 'bg-violet text-white'
+                        ? 'bg-orange text-white'
                         : 'text-ink-soft hover:text-ink'
                     }`}
                   >
@@ -283,7 +283,7 @@ export default function AddExpenseModal({ group, currentUserEmail, colors, onSav
                           type="checkbox"
                           checked={checked}
                           onChange={() => toggleParticipant(member.email)}
-                          className="h-4 w-4 shrink-0 accent-violet"
+                          className="h-4 w-4 shrink-0 accent-orange"
                         />
                         <span
                           className="h-2.5 w-2.5 shrink-0 rounded-full transition-opacity"

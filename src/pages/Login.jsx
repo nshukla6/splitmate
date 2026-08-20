@@ -3,6 +3,7 @@ import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/auth-context.js'
 import AuthLayout from '../components/AuthLayout.jsx'
 import { Alert, Button, Field, inputClass } from '../components/ui.jsx'
+import { SignInIcon } from './Landing.jsx'
 
 /** Seeded accounts, offered as one-tap fills so testing does not mean typing. */
 const TEST_EMAILS = ['shubham@test.com', 'bob@test.com', 'rahul@test.com', 'eva@test.com']
@@ -39,7 +40,7 @@ export default function Login() {
       footer={
         <>
           New here?{' '}
-          <Link to="/register" className="font-semibold text-violet hover:underline">
+          <Link to="/register" className="font-semibold text-orange hover:underline">
             Create an account
           </Link>
         </>
@@ -86,7 +87,7 @@ export default function Login() {
               key={testEmail}
               type="button"
               onClick={() => fillTestAccount(testEmail)}
-              className="rounded-full border border-line bg-surface px-3 py-1.5 text-xs font-medium text-ink-soft transition-colors hover:border-violet hover:text-violet"
+              className="rounded-full border border-line bg-surface px-3 py-1.5 text-xs font-medium text-ink-soft transition-colors hover:border-orange hover:text-orange"
             >
               {testEmail}
             </button>
@@ -97,11 +98,3 @@ export default function Login() {
   )
 }
 
-function SignInIcon() {
-  return (
-    <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.6">
-      <path d="M2 8h8M9 5l3 3-3 3" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M13 2v12" strokeLinecap="round" />
-    </svg>
-  )
-}

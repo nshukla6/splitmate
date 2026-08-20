@@ -2,7 +2,7 @@ const BUTTON_BASE =
   'inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all disabled:cursor-not-allowed disabled:opacity-40'
 
 const VARIANTS = {
-  primary: 'bg-violet text-white shadow-[0_1px_0_0_#2E0B84] hover:bg-violet-deep active:translate-y-px',
+  primary: 'bg-orange text-white hover:bg-orange-deep active:translate-y-px',
   secondary: 'border border-line bg-surface text-ink hover:border-ink-faint',
   ghost: 'text-ink-soft hover:bg-line-soft hover:text-ink',
   danger: 'border border-owe/30 bg-owe-wash text-owe hover:bg-owe hover:text-white',
@@ -23,7 +23,7 @@ export function Field({ label, hint, children, htmlFor }) {
 }
 
 export const inputClass =
-  'w-full rounded-xl border border-line bg-surface px-3.5 py-2.5 text-[15px] text-ink placeholder:text-ink-faint/70 transition-colors focus:border-violet focus:outline-none'
+  'w-full rounded-xl border border-line bg-surface px-3.5 py-2.5 text-[15px] text-ink placeholder:text-ink-faint/70 transition-colors focus:border-orange focus:outline-none'
 
 export function Panel({ children, className = '' }) {
   return (
