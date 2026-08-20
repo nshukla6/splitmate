@@ -1,0 +1,18 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "mkdir -p \"${CLAUDE_PROJECT_DIR}/.claude\" && echo \"[$(date '+%Y-%m-%d %H:%M:%S')] Bash command executed\" >> \"${CLAUDE_PROJECT_DIR}/.claude/bash-history.log\"",
+            "timeout": 2,
+            "silent": true
+          }
+        ]
+      }
+    ]
+  },
+  "description": "Logs all bash commands to .claude/bash-history.log with timestamps"
+}
