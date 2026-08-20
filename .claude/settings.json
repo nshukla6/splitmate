@@ -12,7 +12,19 @@
           }
         ]
       }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR}/.claude/log-user-prompt.sh\"",
+            "timeout": 2,
+            "silent": true
+          }
+        ]
+      }
     ]
   },
-  "description": "Logs all bash commands to .claude/bash-history.log with timestamps. Note: Hook system does not expose command parameter; use 'tail -f .claude/bash-history.log' to monitor real-time command execution."
+  "description": "Logging hooks: bash commands and user prompts with timestamps and session tracking"
 }
