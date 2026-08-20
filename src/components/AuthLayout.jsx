@@ -42,11 +42,11 @@ export default function AuthLayout({ eyebrow, title, subtitle, children, footer 
 
       <main className="flex min-h-screen flex-col justify-center px-5 py-12 sm:px-12">
         <div className="mx-auto w-full max-w-sm">
-          <div className="mb-10 flex justify-center lg:hidden">
+          <Link to="/" className="mb-10 flex justify-center lg:hidden rounded-md text-paper hover:opacity-75">
             <Logo className="h-10 w-auto" />
-          </div>
+          </Link>
 
-          <p className="label text-violet">{eyebrow}</p>
+          <p className="label text-orange">{eyebrow}</p>
           <h1 className="display mt-3 text-4xl">{title}</h1>
           {subtitle && <p className="mt-3 text-[15px] leading-relaxed text-ink-soft">{subtitle}</p>}
 

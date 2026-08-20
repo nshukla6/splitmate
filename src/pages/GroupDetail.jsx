@@ -51,7 +51,12 @@ export default function GroupDetail() {
     if (editingExpense) {
       storage.deleteExpense(editingExpense.id)
     }
-    storage.addExpense({ ...draft, groupId: group.id, createdBy: user.email })
+    storage.addExpense({
+      ...draft,
+      groupId: group.id,
+      createdBy: editingExpense?.createdBy ?? user.email,
+      createdAt: editingExpense?.createdAt,
+    })
     setModalOpen(false)
     setEditingExpense(null)
     refresh()
@@ -211,7 +216,7 @@ function ExpenseRow({ expense, currentUserEmail, nameFor, colors, onDelete, onEd
         {expense.category && expense.category !== 'Other' && (
           <>
             <span aria-hidden="true" className="text-ink-faint/50">·</span>
-            <span className="inline-flex items-center rounded-full bg-violet/10 px-2 py-0.5 text-xs font-medium text-violet">
+            <span className="inline-flex items-center rounded-full bg-orange/10 px-2 py-0.5 text-xs font-medium text-orange">
               {expense.category}
             </span>
           </>
@@ -253,7 +258,7 @@ function ExpenseRow({ expense, currentUserEmail, nameFor, colors, onDelete, onEd
                 type="button"
                 onClick={onEdit}
                 aria-label={`Edit ${expense.description}`}
-                className="label rounded-md px-1.5 py-1 text-violet transition-opacity hover:opacity-70"
+                className="label rounded-md px-1.5 py-1 text-orange transition-opacity hover:opacity-70"
               >
                 Edit
               </button>

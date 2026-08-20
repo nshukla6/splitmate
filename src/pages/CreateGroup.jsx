@@ -146,7 +146,7 @@ export default function CreateGroup() {
 
         <div className="flex gap-2">
           <Button type="submit" className="gap-2 px-6 py-3">
-            <CreateIcon />
+            <PlusIcon />
             Create group
           </Button>
           <Link to="/dashboard">
@@ -161,14 +161,6 @@ export default function CreateGroup() {
 }
 
 function PlusIcon() {
-  return (
-    <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <path d="M8 3.5v9M3.5 8h9" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function CreateIcon() {
   return (
     <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
       <path d="M8 3.5v9M3.5 8h9" strokeLinecap="round" />
