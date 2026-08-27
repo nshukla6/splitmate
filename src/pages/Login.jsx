@@ -19,9 +19,9 @@ export default function Login() {
 
   if (user) return <Navigate to="/dashboard" replace />
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault()
-    const result = login(email, password)
+    const result = await login(email, password)
     if (!result.ok) return setError(result.error)
     navigate(location.state?.from ?? '/dashboard', { replace: true })
   }

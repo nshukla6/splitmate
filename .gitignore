@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+.env
+
+# Local Claude Code tooling (skill installs, custom commands, caches)
+.claude/commands/
+.claude/skills/
+.impeccable/

@@ -3,10 +3,14 @@
 Shared expenses for a group — who paid, who shared, and the fewest payments
 that clear the balance.
 
-All data lives in the browser's `localStorage`. There is no backend, no server,
-and no network calls for data. Supabase comes later.
+Data lives in Supabase (Postgres + Auth), reached through
+`@supabase/supabase-js`. Every table has row-level security enabled, so a
+client only ever sees the groups and expenses it belongs to.
 
 ## Running it
+
+Needs a `.env` with `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`
+for the Supabase project (see `src/data/supabaseClient.js`).
 
 ```bash
 npm install
@@ -17,8 +21,8 @@ npm run lint
 
 ## Test accounts
 
-Created automatically the first time the app loads. The password for all four
-is `password`.
+Already seeded in the Supabase project (Auth + the `users` table), not
+created client-side. The password for all four is `password`.
 
 | Email              |
 | ------------------ |
@@ -27,24 +31,26 @@ is `password`.
 | rahul@test.com     |
 | eva@test.com       |
 
-To start over, clear the `splitmate.*` keys in `localStorage` and reload.
-
 ## How it is put together
 
 ```
 src/
-  data/storage.js        the ONLY module that touches localStorage
-  context/               all authentication logic
-  utils/                 balance engine, money maths, member colours
-  components/            shell, modal, split bar, avatars, primitives
-  pages/                 landing, login, register, dashboard, group pages
+  data/supabaseClient.js  the Supabase client instance (env-configured)
+  data/storage.js         the ONLY module that queries Supabase tables
+  context/                all authentication logic
+  utils/                  balance engine, money maths, member colours
+  components/             shell, modal, split bar, avatars, primitives
+  pages/                  landing, login, register, dashboard, group pages
 ```
 
-**Storage boundary.** Every read and write goes through `src/data/storage.js`.
-Nothing else in the app references `localStorage`.
+**Storage boundary.** Every read and write goes through `src/data/storage.js`,
+and every function there is async. Nothing else in the app queries Supabase
+directly.
 
-**Auth.** `AuthContext` owns seeding, register, login, session restore, and
-logout. Passwords are compared in plain text — this build is local only.
+**Auth.** `AuthContext` wraps Supabase Auth (`signInWithPassword`, `signUp`,
+`signOut`, session restore via `onAuthStateChange`) and mirrors each signed-in
+user into the `users` table so group invites can resolve them by email.
+Credentials never touch app code — Supabase Auth handles that entirely.
 
 **Members are keyed by email, not by user id.** Someone can be added to a group
 before they have an account; they join as `pending` and keep their place in
