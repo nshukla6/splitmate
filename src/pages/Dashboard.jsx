@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/auth-context.js'
 import * as storage from '../data/storage.js'
@@ -11,13 +11,31 @@ import Logo from '../components/Logo.jsx'
 
 export default function Dashboard() {
   const { user } = useAuth()
+  const [groups, setGroups] = useState([])
 
-  // Recomputed from storage on every visit — no cached totals anywhere.
-  const groups = useMemo(() => {
-    return storage.getGroupsForUser(user.email).map((group) => ({
-      ...group,
-      balance: balanceForMember(group.members, storage.getExpenses(group.id), user.email),
-    }))
+  // Reloaded from Supabase on every visit — no cached totals anywhere.
+  useEffect(() => {
+    let active = true
+    async function load() {
+      const userGroups = await storage.getGroupsForUser(user.email)
+      const withBalances = await Promise.all(
+        userGroups.map(async (group) => {
+          const [expenses, settlements] = await Promise.all([
+            storage.getExpenses(group.id),
+            storage.getSettlements(group.id),
+          ])
+          return {
+            ...group,
+            balance: balanceForMember(group.members, expenses, user.email, settlements),
+          }
+        }),
+      )
+      if (active) setGroups(withBalances)
+    }
+    load().catch(console.error)
+    return () => {
+      active = false
+    }
   }, [user.email])
 
   const owedToYou = groups.reduce((sum, g) => sum + Math.max(g.balance, 0), 0)

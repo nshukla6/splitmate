@@ -38,7 +38,7 @@ export function sharesFor(expense) {
  * Net position of every member, in cents.
  * Positive means the group owes them; negative means they owe the group.
  */
-export function netBalances(members, expenses) {
+export function netBalances(members, expenses, settlements = []) {
   const net = {}
   for (const member of members) net[member.email] = 0
 
@@ -55,6 +55,12 @@ export function netBalances(members, expenses) {
     }
     net[expense.paidBy] = (net[expense.paidBy] ?? 0) + paid
   }
+
+  for (const settlement of settlements) {
+    net[settlement.from] = (net[settlement.from] ?? 0) + settlement.cents
+    net[settlement.to] = (net[settlement.to] ?? 0) - settlement.cents
+  }
+
   return net
 }
 
@@ -97,12 +103,12 @@ export function settleUp(net) {
 }
 
 /** Everything a group view needs: net positions plus the settlement plan. */
-export function groupBalance(members, expenses) {
-  const net = netBalances(members, expenses)
+export function groupBalance(members, expenses, settlements = []) {
+  const net = netBalances(members, expenses, settlements)
   return { net, payments: settleUp(net) }
 }
 
 /** One member's standing in a group, in cents. Positive means they are owed. */
-export function balanceForMember(members, expenses, email) {
-  return netBalances(members, expenses)[email] ?? 0
+export function balanceForMember(members, expenses, email, settlements = []) {
+  return netBalances(members, expenses, settlements)[email] ?? 0
 }

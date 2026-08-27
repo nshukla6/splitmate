@@ -19,7 +19,7 @@ export default function CreateGroup() {
   const [formError, setFormError] = useState('')
 
   /** Resolve the email against the user list so the invite shows its real status now. */
-  function addInvite() {
+  async function addInvite() {
     const email = storage.normalizeEmail(emailDraft)
     setInviteError('')
 
@@ -30,7 +30,7 @@ export default function CreateGroup() {
       return setInviteError('That person is already on the list.')
     }
 
-    const existing = storage.findUserByEmail(email)
+    const existing = await storage.findUserByEmail(email)
     setInvites((current) => [
       ...current,
       {
@@ -46,16 +46,20 @@ export default function CreateGroup() {
     setInvites((current) => current.filter((invite) => invite.email !== email))
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault()
     if (!name.trim()) return setFormError('Give the group a name.')
 
-    const group = storage.createGroup({
-      name,
-      creatorEmail: user.email,
-      memberEmails: invites.map((invite) => invite.email),
-    })
-    navigate(`/group/${group.id}`, { replace: true })
+    try {
+      const group = await storage.createGroup({
+        name,
+        creatorEmail: user.email,
+        memberEmails: invites.map((invite) => invite.email),
+      })
+      navigate(`/group/${group.id}`, { replace: true })
+    } catch (err) {
+      setFormError(err.message || 'Could not create the group.')
+    }
   }
 
   const members = [{ email: user.email, name: user.name, status: 'active', isYou: true }, ...invites]

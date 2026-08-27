@@ -8,7 +8,15 @@ import { Alert, Button, Field, inputClass, PendingTag } from './ui.jsx'
  * Opens over the group page — the list stays visible behind it, so an expense
  * is added in the same place it lands. Shares recalculate on every keystroke.
  */
-export default function AddExpenseModal({ group, currentUserEmail, colors, onSave, onClose, editingExpense }) {
+export default function AddExpenseModal({
+  group,
+  currentUserEmail,
+  colors,
+  onSave,
+  onClose,
+  editingExpense,
+  saveError,
+}) {
   const [description, setDescription] = useState(editingExpense?.description ?? '')
   const [amount, setAmount] = useState(editingExpense ? (editingExpense.amount?.toFixed(2) ?? '') : '')
   const [date, setDate] = useState(editingExpense?.date ?? today)
@@ -369,7 +377,7 @@ export default function AddExpenseModal({ group, currentUserEmail, colors, onSav
               </div>
             </div>
 
-            <Alert>{error}</Alert>
+            <Alert>{error || saveError}</Alert>
           </div>
 
           <footer className="flex justify-end gap-2 border-t border-line-soft bg-paper/50 px-6 py-4">

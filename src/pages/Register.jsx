@@ -15,9 +15,9 @@ export default function Register() {
 
   if (user) return <Navigate to="/dashboard" replace />
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault()
-    const result = register({ name, email, password })
+    const result = await register({ name, email, password })
     if (!result.ok) return setError(result.error)
     navigate('/dashboard', { replace: true })
   }
@@ -60,7 +60,7 @@ export default function Register() {
           />
         </Field>
 
-        <Field label="Password" htmlFor="register-password" hint="Stored in this browser only.">
+        <Field label="Password" htmlFor="register-password" hint="At least 6 characters.">
           <input
             id="register-password"
             type="password"

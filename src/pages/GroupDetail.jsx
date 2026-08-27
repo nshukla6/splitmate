@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useAuth } from '../context/auth-context.js'
 import * as storage from '../data/storage.js'
@@ -9,22 +9,53 @@ import Avatar from '../components/Avatar.jsx'
 import SplitBar from '../components/SplitBar.jsx'
 import AddExpenseModal from '../components/AddExpenseModal.jsx'
 import { Button, PendingTag } from '../components/ui.jsx'
+import { downloadGroupHistory } from '../utils/groupExport.js'
 
 export default function GroupDetail() {
   const { id } = useParams()
   const { user } = useAuth()
 
-  const [group] = useState(() => storage.getGroup(id))
-  const [expenses, setExpenses] = useState(() => (group ? storage.getExpenses(id) : []))
+  const [group, setGroup] = useState(null)
+  const [expenses, setExpenses] = useState([])
+  const [settlements, setSettlements] = useState([])
+  const [loaded, setLoaded] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
   const [editingExpense, setEditingExpense] = useState(null)
+  const [saveError, setSaveError] = useState('')
+  const [exporting, setExporting] = useState(false)
 
-  const refresh = useCallback(() => setExpenses(storage.getExpenses(id)), [id])
+  const refresh = useCallback(async () => {
+    const [nextExpenses, nextSettlements] = await Promise.all([
+      storage.getExpenses(id),
+      storage.getSettlements(id),
+    ])
+    setExpenses(nextExpenses)
+    setSettlements(nextSettlements)
+  }, [id])
 
-  // Balances are derived from the live expense list every render — never stored.
+  useEffect(() => {
+    let active = true
+    async function load() {
+      const nextGroup = await storage.getGroup(id)
+      const [nextExpenses, nextSettlements] = nextGroup
+        ? await Promise.all([storage.getExpenses(id), storage.getSettlements(id)])
+        : [[], []]
+      if (!active) return
+      setGroup(nextGroup)
+      setExpenses(nextExpenses)
+      setSettlements(nextSettlements)
+      setLoaded(true)
+    }
+    load().catch(console.error)
+    return () => {
+      active = false
+    }
+  }, [id])
+
+  // Balances are derived from the live expense + settlement lists every render — never stored.
   const { net, payments } = useMemo(
-    () => (group ? groupBalance(group.members, expenses) : { net: {}, payments: [] }),
-    [group, expenses],
+    () => (group ? groupBalance(group.members, expenses, settlements) : { net: {}, payments: [] }),
+    [group, expenses, settlements],
   )
 
   // One colour per member, deconflicted across the group.
@@ -34,6 +65,8 @@ export default function GroupDetail() {
     (email) => group?.members.find((m) => m.email === email)?.name ?? storage.nameFromEmail(email),
     [group],
   )
+
+  if (!loaded) return null
 
   if (!group) {
     return (
@@ -47,29 +80,74 @@ export default function GroupDetail() {
     )
   }
 
-  function handleSave(draft) {
-    if (editingExpense) {
-      storage.deleteExpense(editingExpense.id)
+  async function handleSave(draft) {
+    try {
+      setSaveError('')
+      if (editingExpense) {
+        // The Edit button is only shown to the expense's creator (see isCreator in
+        // ExpenseRow below), but that's UI-only — enforce it here too, since this is
+        // reachable directly (e.g. by calling handleSave-equivalent storage calls).
+        if (editingExpense.createdBy !== user.email) {
+          setSaveError('Only the person who added this expense can edit it.')
+          return
+        }
+        await storage.deleteExpense(editingExpense.id)
+      }
+      await storage.addExpense({
+        ...draft,
+        groupId: group.id,
+        createdBy: editingExpense?.createdBy ?? user.email,
+        createdAt: editingExpense?.createdAt,
+      })
+      setModalOpen(false)
+      setEditingExpense(null)
+      await refresh()
+    } catch (err) {
+      setSaveError(err.message || 'Could not save the expense.')
     }
-    storage.addExpense({
-      ...draft,
-      groupId: group.id,
-      createdBy: editingExpense?.createdBy ?? user.email,
-      createdAt: editingExpense?.createdAt,
-    })
-    setModalOpen(false)
-    setEditingExpense(null)
-    refresh()
   }
 
-  function handleDelete(expenseId) {
-    storage.deleteExpense(expenseId)
-    refresh()
+  async function handleDelete(expenseId) {
+    await storage.deleteExpense(expenseId)
+    await refresh()
   }
 
   function handleEdit(expense) {
+    setSaveError('')
     setEditingExpense(expense)
     setModalOpen(true)
+  }
+
+  function openAddModal() {
+    setSaveError('')
+    setEditingExpense(null)
+    setModalOpen(true)
+  }
+
+  async function handleExportHistory() {
+    setExporting(true)
+    try {
+      await downloadGroupHistory(group.id, group.name)
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setExporting(false)
+    }
+  }
+
+  async function handleSettle(payment) {
+    try {
+      await storage.addSettlement({
+        groupId: group.id,
+        from: payment.from,
+        to: payment.to,
+        cents: payment.cents,
+        createdBy: user.email,
+      })
+      await refresh()
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   const myBalance = net[user.email] ?? 0
@@ -88,10 +166,31 @@ export default function GroupDetail() {
             {expenses.length} expense{expenses.length === 1 ? '' : 's'}
           </p>
         </div>
-        <Button onClick={() => setModalOpen(true)} className="gap-2">
-          <PlusIcon />
-          Add expense
-        </Button>
+        <div className="flex items-center gap-2">
+          {group.createdBy === user.email && (
+            <Link to={`/group/${group.id}/settings`}>
+              <Button variant="secondary" className="gap-2" aria-label="Group settings">
+                <GearIcon />
+                Settings
+              </Button>
+            </Link>
+          )}
+          <span title={expenses.length === 0 ? 'Add an expense first' : undefined}>
+            <Button
+              variant="secondary"
+              className="gap-2"
+              disabled={expenses.length === 0 || exporting}
+              onClick={handleExportHistory}
+            >
+              <DownloadIcon />
+              {exporting ? 'Exporting…' : 'Export history'}
+            </Button>
+          </span>
+          <Button onClick={openAddModal} className="gap-2">
+            <PlusIcon />
+            Add expense
+          </Button>
+        </div>
       </header>
 
       {/* Where the current user stands in this group, stated once and plainly. */}
@@ -117,7 +216,7 @@ export default function GroupDetail() {
               <p className="mx-auto mt-2 max-w-xs text-[15px] leading-relaxed text-ink-soft">
                 Add the first expense and Splitmate starts working out who owes whom.
               </p>
-              <Button className="mt-5 gap-2" onClick={() => setModalOpen(true)}>
+              <Button className="mt-5 gap-2" onClick={openAddModal}>
                 <PlusIcon />
                 Add expense
               </Button>
@@ -144,6 +243,7 @@ export default function GroupDetail() {
             nameFor={nameFor}
             colors={colors}
             hasExpenses={expenses.length > 0}
+            onSettle={handleSettle}
           />
         </div>
 
@@ -178,8 +278,10 @@ export default function GroupDetail() {
           onClose={() => {
             setModalOpen(false)
             setEditingExpense(null)
+            setSaveError('')
           }}
           editingExpense={editingExpense}
+          saveError={saveError}
         />
       )}
     </div>
@@ -289,9 +391,20 @@ function ExpenseRow({ expense, currentUserEmail, nameFor, colors, onDelete, onEd
  * that involve them lead and are stated in the second person; the rest are
  * still shown, quietly, because a group needs the full picture.
  */
-function BalanceSummary({ payments, currentUserEmail, nameFor, colors, hasExpenses }) {
+function BalanceSummary({ payments, currentUserEmail, nameFor, colors, hasExpenses, onSettle }) {
+  const [settlingKey, setSettlingKey] = useState(null)
   const mine = payments.filter((p) => p.from === currentUserEmail || p.to === currentUserEmail)
   const others = payments.filter((p) => p.from !== currentUserEmail && p.to !== currentUserEmail)
+
+  async function handleClick(payment) {
+    const key = `${payment.from}-${payment.to}`
+    setSettlingKey(key)
+    try {
+      await onSettle(payment)
+    } finally {
+      setSettlingKey((current) => (current === key ? null : current))
+    }
+  }
 
   return (
     <section className="mt-10">
@@ -313,9 +426,11 @@ function BalanceSummary({ payments, currentUserEmail, nameFor, colors, hasExpens
           {mine.map((payment) => {
             const youPay = payment.from === currentUserEmail
             const other = youPay ? payment.to : payment.from
+            const key = `${payment.from}-${payment.to}`
+            const settling = settlingKey === key
             return (
               <div
-                key={`${payment.from}-${payment.to}`}
+                key={key}
                 className={`flex items-center justify-between gap-3 rounded-2xl px-5 py-4 ${
                   youPay ? 'bg-owe-wash' : 'bg-owed-wash'
                 }`}
@@ -326,8 +441,18 @@ function BalanceSummary({ payments, currentUserEmail, nameFor, colors, hasExpens
                     {youPay ? `You owe ${nameFor(other)}` : `${nameFor(other)} owes you`}
                   </span>
                 </span>
-                <span className={`tabular display shrink-0 text-xl ${youPay ? 'text-owe' : 'text-owed'}`}>
-                  {formatCents(payment.cents)}
+                <span className="flex shrink-0 items-center gap-3">
+                  <span className={`tabular display text-xl ${youPay ? 'text-owe' : 'text-owed'}`}>
+                    {formatCents(payment.cents)}
+                  </span>
+                  <Button
+                    variant="secondary"
+                    className="px-2.5 py-1 text-xs"
+                    disabled={settling}
+                    onClick={() => handleClick(payment)}
+                  >
+                    {settling ? 'Settling…' : 'Settle up'}
+                  </Button>
                 </span>
               </div>
             )
@@ -356,6 +481,26 @@ function PlusIcon() {
   return (
     <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8">
       <path d="M8 3.5v9M3.5 8h9" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function DownloadIcon() {
+  return (
+    <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <path d="M8 2.5v7.2M5 7l3 3 3-3M3 13.5h10" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function GearIcon() {
+  return (
+    <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <circle cx="8" cy="8" r="2.25" />
+      <path
+        d="M8 2.5v1.2M8 12.3v1.2M13.5 8h-1.2M3.7 8H2.5M11.66 4.34l-.85.85M5.19 10.81l-.85.85M11.66 11.66l-.85-.85M5.19 5.19l-.85-.85"
+        strokeLinecap="round"
+      />
     </svg>
   )
 }
